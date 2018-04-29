@@ -1,0 +1,348 @@
+###
+###   Xaller Standard Library - web.xal
+###   CreativeGP - 2017.10.15(yyyy.mm.dd)
+###
+###   A library to defube web types.
+
+<'list.xal'>
+
+-(Web_Object) {
+    (__name)string
+    (__element)string
+    (_web)string
+
+    (accesskey)string
+    (class)string
+    (contextmenu)string
+#    (dataset)
+    (dir)string
+    (dropzone)string
+    (id)string
+    (itemid)string
+    (itemprop)string
+    (itemref)string
+    (itemscope)string
+    (itemtype)string
+    (lang)string
+    (style)string
+    (title)string
+    (translate)string
+
+    (contenteditable)bool
+    (draggable)bool
+    (hidden)bool
+    (spellcheck)bool
+
+    (tabindex)int
+}
+
+# NOTE(cgp) This object is too danger.
+# -(HTML):string {}
+
+# TODO
+# -(Color) {
+#     (red)int
+#     (green)int
+#     (blue)int
+#     (alpha)int
+#     @ (__init) {
+#         # NOTE(cgp) Set this opaque color as default.
+#         .alpha = 255
+#     }
+# }
+# @ (__color_string (c)color) {
+#     return (concat '#' (hexstr c.red) (hexstr c.green) (hexstr c.blue))
+# }
+
+-(Letter):Web_Object {
+    (text)string
+
+    # TODO(cgp) Apply the Color type to these members.
+    # TODO(cgp) Imprement setter.
+    (color)string
+    (backcolor)string
+
+    @ (__init) {
+	._web = 'Letter'
+    }
+}
+
+# -(Color) {
+#     (r)int
+#     (g)int
+#     (b)int
+#     (a)int
+# }
+
+-(Button):Web_Object {
+    (text)string
+
+    (autofocus)bool
+# 非標準要素！    (autocomlete)string
+    (disabled)bool
+    (form)string
+    (formaction)string
+    (formenctype)string
+    (formmethod)string
+    (formnovalidate)bool
+    (formtarget)string
+    (name)string
+    (type)string
+    (value)string
+
+    @ (__init) {
+	._web = 'Button'
+    }
+}
+
+-(Div):Web_Object {
+    (text)string
+
+    @ (__init) {
+	._web = 'Div'
+    }
+}
+
+-(Image):Web_Object {
+    (alt)string
+    (crossorigin)string
+    (longdesc)string
+    (referrerpolicy)string
+    (sizes)string
+    (src)string
+    (srcset)string
+    (usemap)string
+
+    (width)int
+    (height)int
+    
+    (ismap)bool
+
+    @ (__init) {
+	._web = 'Image'
+    }
+}
+
+-(Textbox):Web_Object {
+    (rows)int
+    (cols)int
+    (maxlength)int
+    (minlength)int
+
+    (text)string
+    (autocapitalize)bool
+    (autocomplete)bool
+    (autofocus)bool
+    (disabled)bool
+    (spellcheck)bool
+    (readonly)bool
+
+    (selectionDirection)string
+    (selectionEnd)int
+    (selectionStart)int
+
+#    (required)string
+    (form)string
+    (placeholder)string
+    (wrap)string
+
+    @ (__init) {
+	._web = 'Textbox'
+    }
+}
+
+-(Input):Web_Object {
+    (text)string
+
+    (type)string
+    (autocomplete)string
+    (autofocus)bool
+    (capture)bool
+    (disabled)bool
+    (form)string
+    (formaction)string
+    (formactype)string
+    (formmethod)string
+    (formnovalidate)bool
+    (formtarget)string
+    (height)int
+    (inputmode)string
+    (list)string
+    (max)int
+    (maxlength)int
+    (min)int
+    (minlength)int
+    (multiple)bool
+    (name)string
+    (pattern)string
+    (placeholder)string
+    (readonly)bool
+    (required)bool
+    (selectionDirection)string
+    (selectionStart)int
+    (selectionEnd)int
+    (size)int
+    (spellcheck)string
+    (src)string
+    (step)string
+    (val)string
+    (width)int
+
+    @ (__init) {
+        ._web = 'Input'
+        .maxlength = 40
+    }
+}
+
+-(Checkbox):Input {
+    # NOTE(cgp) コンストラクタで意図的に._webをCheckboxに変える。
+    # DOM出力はInput型のコンストラクタで行われているので二重に出力されないように
+    # 未定義のCheckboxという識別子に変える。
+    @ (__init) {
+        ._web = 'Checkbox'
+        .type = 'checkbox'
+    }
+}
+
+-(Color_Selector):Input {
+    @ (__init) {
+        ._web = 'Color_Selector'
+        .type = 'color'
+    }
+}
+
+-(Date_Selector):Input {
+    @ (__init) {
+        ._web = 'Date_Selector'
+        .type = 'date'
+    }
+}
+
+-(Email_Input):Input {
+    @ (__init) {
+        ._web = 'Email_Input'
+        .type = 'email'
+    }
+}
+
+-(File_Selector):Input {
+    @ (__init) {
+        ._web = 'File_Selector'
+        .type = 'file'
+    }
+}
+
+-(Month_Selector):Input {
+    @ (__init) {
+        ._web = 'Month_Selector'
+        .type = 'month'
+    }
+}
+
+-(Number_Selector):Input {
+    @ (__init) {
+        ._web = 'Number_Selector'
+        .type = 'number'
+    }
+}
+
+-(Password):Input {
+    @ (__init) {
+        ._web = 'Password'
+        .type = 'password'
+    }
+}
+
+-(Radio_Button):Input {
+    @ (__init) {
+        ._web = 'Radio_Button'
+        .type = 'radio'
+    }
+}
+
+
+-(Range_Selector):Input {
+    @ (__init) {
+        ._web = 'Range_Selector'
+        .type = 'range'
+    }
+}
+
+-(Reset_Button):Input {
+    @ (__init) {
+        ._web = 'Reset_Button'
+        .type = 'reset'
+    }
+}
+
+-(Search_Input):Input {
+    @ (__init) {
+        ._web = 'Search_Input'
+        .type = 'search'
+    }
+}
+
+-(Submit_Button):Input {
+    @ (__init) {
+        ._web = 'Submit_Button'
+        .type = 'submit'
+    }
+}
+
+-(TEL_Input):Input {
+    @ (__init) {
+        ._web = 'TEL_Input'
+        .type = 'tel'
+    }
+}
+
+-(URL_Input):Input {
+    @ (__init) {
+        ._web = 'URL_Input'
+        .type = 'url'
+    }
+}
+
+-(Time_Input):Input {
+    @ (__init) {
+        ._web = 'Time_Input'
+        .type = 'time'
+    }
+}
+
+-(Week_Selector):Input {
+    @ (__init) {
+        ._web = 'Time_Input'
+        .type = 'time'
+    }
+}
+
+-(Combobox):Web_Object {
+    (autofocus)bool
+    (disabled)bool
+    (form)string
+    (multiple)bool
+    (name)string
+    (required)bool
+    (size)int
+
+    (choices)string
+    (text)string
+    (val)string
+
+    @ (__init) {
+        ._web = 'Combobox'
+    }
+
+    @ (add_choice (choi)string) {
+#        __src '$("#"+this.__name).append(`<option value="`+choi+`">`+choi+`</option>`)'
+        .text = (concat .text '<option value="' choi '">' choi '</option>`)')
+        .choices = (licon .choices choi)
+    }
+
+    @ (selected_choice) {
+        return .val
+    }
+}		       
+
+abort

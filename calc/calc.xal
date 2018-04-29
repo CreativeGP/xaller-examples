@@ -1,0 +1,373 @@
+<'list.xal'>
+<'web.xal'>
+<'math.xal'>
+
+(mode)int
+(using_operation)string
+(lOperators)string
+lOperators = (licon lOperators '+')
+lOperators = (licon lOperators '-')
+lOperators = (licon lOperators '*')
+lOperators = (licon lOperators '/')
+
+(lSeparators)string
+lSeparators = lOperators
+lSeparators = (licon lSeparators '(')
+lSeparators = (licon lSeparators ')')
+
++(main)Div
++(num1)Div
++(num2)Div
++(num3)Div
++(operators)Div
++(view)Textbox in main
+view.text = '0'
+mode = 0
+
+@ (makelist (str)string) {
+    (words)string
+    (ofs)int
+    loop {
+        (tmpofs)int
+        tmpofs = ofs
+        # 最大数文字
+        ofs = 100000 
+        (i)int
+        loop {
+            (opridx)int
+            opridx = (stridx str (liat lSeparators i) tmpofs)
+            (not (eq opridx -1)) ? {
+                ofs = (min ofs opridx)
+            }
+
+            i = (+ i 1)
+            (eq i (lilen lSeparators)) ? {
+                (eq ofs 0) ? {
+                    ofs = 1
+                }
+                escape
+            }
+        }
+        (eq ofs 100000) ? {
+            words = (licon words (substr str (- tmpofs 1)))
+            escape
+        }
+        # tmpofsを調整して「符号+数字」が入るようにする
+        (eq tmpofs 0) ? {
+            tmpofs = 0
+        }
+        branch true ? {
+            tmpofs = (- tmpofs 1)
+        }
+        words = (licon words (substr str tmpofs (- ofs tmpofs)))
+        ofs = (+ 1 ofs)
+    }
+
+    i = 0
+    loop {
+        # 括弧は単独でリストに入れるようにする
+        (and (eq (strat (liat words i)  0) '(') (> (strlen (liat words i)) 1)) ? {
+            words = (liins words i (substr (liat words i) 1))
+            words = (lialt words i '(')
+        }
+        (eq (- (lilen words) 1) i) ? {
+            escape
+        }
+        i = (+ i 1)
+    }
+    return words
+}
+
+@ (parse (words)string) {
+    # 0:32|1:+21|2:+14|3:*21|
+    (i)int
+    loop {
+        (eq (strat (liat words i) 0) '(') ? {
+            (ans)string
+            (parsen)string
+            (indent)int
+            (j)int
+            j = i
+            loop {
+                (eq (liat words j) '(') ? {
+                    indent = (+ indent 1)
+                }
+                parsen = (concat parsen (liat words j))
+                (eq (liat words j) ')') ? {
+                    indent = (- indent 1)
+                    (eq indent 0) ? {
+                        # 括弧がついたままなので外す
+                        (eq (strat parsen 0) '(') ? {
+                            parsen = (strdel parsen 0 1)
+                            (eq (strat parsen -1) ')') ? {
+                                parsen = (strdel parsen -1 1)
+                            }
+                        }
+                        # parsen = (strrep parsen '(' '')
+                        # jは後で使うので＋１しておく
+                        j = (+ j 1)
+                        escape
+                    }
+                }
+                (eq (- (lilen words) 1) j) ? {
+                    escape
+                }
+                j = (+ j 1)
+            }
+            ans = (parse (makelist parsen))
+            # 空白が最初に入っているのでそれを削除
+            ans = (substr ans 1)
+            (b)int
+            b =  (+ (liidx words ')' i) 1)
+            words = (concat (lisub words 0 (+ i 1)) (lisub words j (- (lilen words) j)))
+            words = (lireindex words)
+            words = (lialt words i ans)
+            words = (lireindex words)
+            i = (- i 1)
+        }
+        i = (+ i 1)
+        (>= i (lilen words)) ? {
+            escape
+        }
+    }
+    words = (lialt words 0 (concat ' ' (liat words 0)))
+    words = (makelist (li2str words ''))
+    i = 0
+    loop {
+        (eq (strat (liat words i) 0) '*') ? {
+            # 掛け算が見つかった場合、前の要素の数字を取得してこの要素
+            # の数字と掛け合わせる。この要素を削除して前の要素の内容を
+            # 演算結果に変更する。
+            (a)int
+            a = (substr (liat words (- i 1)) 1)int
+            (b)int
+            (eq (strlen (liat words i)) 1) ? {
+                # この場合計算すべき数字は次の要素に入っているのでそれを取得
+                b = (liat words (+ i 1))int
+                words = (lidel words (+ i 1))
+            }
+            branch true ? {
+                b = (substr (liat words i) 1)int
+            }
+            (ans)int
+            ans = (* a b)
+            words = (lidel words i)
+            words = (lialt words (- i 1) (concat (strat (liat words (- i 1)) 0) (ans)string))
+            i = (- i 1)
+        }
+        (eq (strat (liat words i) 0) '/') ? {
+            # 掛け算が見つかった場合、前の要素の数字を取得してこの要素
+            # の数字と掛け合わせる。この要素を削除して前の要素の内容を
+            # 演算結果に変更する。
+            (a)int
+            a = (substr (liat words (- i 1)) 1)int
+            (b)int
+            (eq (strlen (liat words i)) 1) ? {
+                # この場合計算すべき数字は次の要素に入っているのでそれを取得
+                b = (liat words (+ i 1))int
+                words = (lidel words (+ i 1))
+            }
+            branch true ? {
+                b = (substr (liat words i) 1)int
+            }
+            (ans)int
+            ans = (/ a b)
+            words = (lidel words i)
+            words = (lialt words (- i 1) (concat (strat (liat words (- i 1)) 0) (ans)string))
+            i = (- i 1)
+        }
+        i = (+ i 1)
+        (>= i (lilen words)) ? {
+            escape
+        }
+    }
+    i = 0
+    loop {
+        (eq (strat (liat words i) 0) '+') ? {
+            (a)int
+            a = (substr (liat words (- i 1)) 1)int
+            (b)int
+            b = (substr (liat words i) 1)int
+            (ans)int
+            ans = (+ a b)
+            words = (lidel words i)
+            words = (lialt words (- i 1) (concat (strat (liat words (- i 1)) 0) (ans)string))
+            i = (- i 1)
+        }
+        (eq (strat (liat words i) 0) '-') ? {
+            (a)int
+            a = (substr (liat words (- i 1)) 1)int
+            (b)int
+            b = (substr (liat words i) 1)int
+            (ans)int
+            ans = (- a b)
+            words = (lidel words i)
+            words = (lialt words (- i 1) (concat (strat (liat words (- i 1)) 0) (ans)string))
+            i = (- i 1)
+        }
+        i = (+ i 1)
+        (>= i (lilen words)) ? {
+            escape
+        }
+    }
+    return (liat words 0)string
+}
+
++(plus_btn)Button in operators
+plus_btn.text = '+'
+plus_btn.disabled = true
+
++(product_btn)Button in operators
+product_btn.text = '*'
+product_btn.disabled = true
+
++(mi_btn)Button in operators
+mi_btn.text = '-'
+# mi_btn.disabled = true
+
++(divid_btn)Button in operators
+divid_btn.text = '/'
+divid_btn.disabled = true
+
++(ac_btn)Button in operators
+ac_btn.text = 'AC'
+@ (ac_btn.click) {
+    view.text = '0'
+    mode = 0
+}
+
++(parbeg_btn)Button in operators
+parbeg_btn.text = '('
+@ (parbeg_btn.click) {
+    (eq view.text '0') ? {
+        view.text = ''
+    }
+    view.text = (concat view.text '(')
+}
+
++(parend_btn)Button in operators
+parend_btn.text = ')'
+@ (parend_btn.click) {
+    (eq view.text '0') ? {
+        view.text = ''
+    }
+    view.text = (concat view.text ')')
+}
+
++(ce_btn)Button in operators
+ce_btn.text = 'CE'
+@ (ce_btn.click) {
+    # TODO 複数文字列関数が出てきたときには対応する
+    # NOTE 直前の文字を一つ消すだけ
+    view.text = (strdel view.text (- (strlen view.text) 1) 1)
+#    mode = 0
+}
+
++(point_btn)Button in operators
+point_btn.text = '.'
+@ (point_btn.click) {
+    view.text = (concat view.text '.')
+}
+
+-(numbtn):Button {
+    (num)int
+    @ (set_num (num)int) {
+        .num = num
+        .text = (num)string
+    }
+
+    @ (click) {
+        # 文字を後ろにくっつける
+        (eq view.text '0') ? {
+            view.text = ''
+        }
+        view.text = (concat view.text (.num)string)
+        mode = 1
+
+        plus_btn.disabled = false
+        product_btn.disabled = false
+        mi_btn.disabled = false
+        divid_btn.disabled = false
+    }
+}
+
++(button9)numbtn in num1
+(button9.set_num 9)
++(button8)numbtn in num1
+(button8.set_num 8)
++(button7)numbtn in num1
+(button7.set_num 7)
++(button6)numbtn in num2
+(button6.set_num 6)
++(button5)numbtn in num2
+(button5.set_num 5)
++(button4)numbtn in num2
+(button4.set_num 4)
++(button3)numbtn in num3
+(button3.set_num 3)
++(button2)numbtn in num3
+(button2.set_num 2)
++(button1)numbtn in num3
+(button1.set_num 1)
++(button0)numbtn in num3
+(button0.set_num 0)
+
+@ (plus_btn.click) {
+    (eq mode 1) ? {
+        (limatchstr lOperators (strat view.text (- (strlen view.text) 1))) ? {
+            # 前の文字が記号の場合は記号を置換
+            view.text = (strdel view.text -1 1)
+        }
+        view.text = (concat view.text '+')
+        using_operation = '+'
+    }
+}
+
+@ (product_btn.click) {
+    (limatchstr lOperators (strat view.text (- (strlen view.text) 1))) ? {
+        view.text = (strdel view.text -1 1)
+    }
+    (eq mode 1) ? {
+        view.text = (concat view.text '*')
+        using_operation = '*'
+    }
+}
+
+@ (mi_btn.click) {
+    (prev_char)string
+    prev_char = (strat view.text (- (strlen view.text) 1))
+    (limatchstr lOperators prev_char) ? {
+        (not (or (eq prev_char '*') (eq prev_char '/'))) ? {
+            view.text = (strdel view.text -1 1)
+        }
+    }
+#    (eq mode 1) ? {
+        (eq view.text '0') ? {
+            view.text = ''
+        }
+        view.text = (concat view.text '-')
+        using_operation = '-'
+#    }
+}
+
+@ (divid_btn.click) {
+    (limatchstr lOperators (strat view.text (- (strlen view.text) 1))) ? {
+        view.text = (strdel view.text -1 1)
+    }
+    (eq mode 1) ? {
+        view.text = (concat view.text '/')
+        using_operation = '/'
+    }
+}
+
++(eq_btn)Button in operators
+eq_btn.text = '='
+@ (eq_btn.click) {
+    (eq mode 1) ? {
+        (ans)string
+        ans = (parse (makelist view.text))
+        view.text = (concat view.text ' = ' ans)
+    }
+}
+
+end

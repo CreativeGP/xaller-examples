@@ -1,0 +1,276 @@
+###
+###   Xaller Standard Library - list.xal
+###   CreativeGP - 2017.10.14(yyyy.mm.dd)
+###
+###   A library to use list operations.
+
+<'str.xal'>
+
+@ (_li_is_colon (list)string (i)int) {
+    (>= (strlen list) 1) ? {
+        (> (strlen list) i) ? {
+            return (and (not (eq '%' (strat list (- i 1)))) (eq ':' (strat list i)))
+        }
+        branch true ? {
+            __log 'Error(_li_is_colon): Index error.'
+            stop
+        }
+    }
+    branch true ? {
+        return false
+    }
+}
+
+@ (_li_is_bar (list)string (i)int) {
+    (>= (strlen list) 1) ? {
+        (> (strlen list) i) ? {
+            return (and (not (eq '%' (strat list (- i 1)))) (eq '|' (strat list i)))
+        }
+        branch true ? {
+            __log 'Error(_li_is_bar): Index error.'
+            stop
+        }
+    }
+    branch true ? {
+        return false
+    }
+}
+
+
+@ (lilen (list)string) {
+    (<= (strlen list) 1) ? {
+        return 0
+    }
+    (res)int
+    (i)int
+    i = 1
+    loop {
+        (_li_is_colon list i) ? {
+            res = (+ res 1)
+        }
+        i = (+ i 1)
+        (eq i (strlen list)) ? {
+            escape
+        }
+    }
+    return res
+}
+
+
+@ (liat (list)string (idx)int) {
+    (<= (lilen list) idx) ? {
+        __log 'Error(liat): Index error.'
+        stop
+    }
+    (start_of_element)int
+    # TODO コロン処理とバー処理
+    start_of_element = (stridx list (concat idx ':'))
+    start_of_element = (+ 1 (stridx list ':' start_of_element))
+    (end_of_element)int
+    end_of_element = (stridx list '|' start_of_element)
+
+    (res)string
+    res = (substr list start_of_element (- end_of_element start_of_element))
+    (i)int
+    i = 1
+    (> i 1) ? {
+        loop {
+            # エスケープ文字として%が入っていた場合それを削除
+            # (eq (strat res (- i i)) '%')
+            i = (+ i 1)
+            (eq i (strlen res)) ? {
+                escape
+            }
+        }
+    }
+    return res
+}
+
+
+@ (licon (list)string (element)string)
+{
+    (eq (strlen element) 0) ? {
+        return
+    }
+
+    (escaped_str)string
+    (i)int
+    loop {
+        (char)string
+        char = (strat element i)
+        (eq char ':') ? {
+            char = '%:'
+        }
+        (eq char '|') ? {
+            char = '%|'
+        }
+        (eq char '%') ? {
+            char = '%%'
+        }
+        escaped_str = (concat escaped_str char)
+        i = (+ i 1)
+        (eq i (strlen element)) ? {
+            escape
+        }
+    }
+    list = (concat list (lilen list) ':' escaped_str '|')
+    return list
+}
+
+
+# (lidel list idx) -> list
+# リストから指定したキーの要素を削除する関数
+@ (lidel (list)string (idx)int) {
+    (<= (lilen list) idx) ? {
+        __log 'Error(lidel) Index error'
+        stop
+    }
+    (start_of_element)int
+    start_of_element = (stridx list (concat idx ':'))
+    (end_of_element)int
+    end_of_element = (+ 1 (stridx list '|' start_of_element))
+
+    (res)string
+    res = (concat (substr list 0 start_of_element) (substr list end_of_element))
+    res = (lireindex res)
+    return res
+}
+
+
+# (lireindex list) -> list
+# リストの通し番号をつけ直す関数
+@ (lireindex (list)string) {
+    (count)int
+    (i)int
+    i = 1
+    loop {
+        (_li_is_colon list i) ? {
+	    # TODO 複数桁になった時どーすんの
+	    (bar_pos)int
+
+            (j)int
+            j = i
+            loop {
+                (_li_is_bar list j) ? {
+                    bar_pos = (+ j 1)
+                    escape
+                }
+                (eq j 0) ? {
+                    escape
+                }
+                j = (- j 1)
+            }
+            
+	    (figure_length)int
+	    figure_length = (strlen (count)string)
+            list = (strdel list bar_pos (- i bar_pos))
+            list = (strins list bar_pos (count)string)
+            count = (+ count 1)
+            i = (+ i (- figure_length 1))
+        }
+        (eq i (- (strlen list) 1)) ? {
+            escape
+        }
+        i = (+ i 1)
+    }
+    return list
+}
+
+# (lialt list idx elm) -> list
+# リストの指定した要素を変更する関数
+@ (lialt (list)string (idx)int (elm)string) {
+    (<= (lilen list) idx) ? {
+        __log 'Error(lidel) Index error'
+        stop
+    }
+    (start_of_element)int
+    start_of_element = (stridx list (concat idx ':'))
+    (end_of_element)int
+    end_of_element = (stridx list '|' start_of_element)
+
+    (res)string
+    (figure_length)int
+    figure_length = (strlen (idx)string)
+    res = (concat (substr list 0 (+ (+ 1 figure_length) start_of_element)) elm (substr list end_of_element))
+    return res
+}
+
+# (limatchstr list str) -> Boolean
+# リスト内の各文字列に入力文字列と同じものがあるかどうかを判断
+@ (limatchstr (list)string (str)string) {
+    (i)int
+    loop {
+        (eq (liat list i) str) ? {
+            return true
+        }
+        (eq i (- (lilen list) 1)) ? {
+            escape
+        }
+        i = (+ i 1)
+    }
+    return false
+}
+
+# (liidx list elm start) -> int
+# リスト内の要素を検索
+@ (liidx (list)string (elm)string (start)int) {
+    (i)int
+    # TODO startが配列の範囲外の場合のエラー
+    i = start
+    loop {
+        (eq (liat list i) elm) ? {
+            return i
+        }
+        (eq i (- (lilen list) 1)) ? {
+            escape
+        }
+        i = (+ i 1)
+    }
+    return -1
+}
+
+
+# (lisub list start length) -> array
+# リストを切り取って新しいリストを作成
+@ (lisub (list)string (start)int (length)int) {
+    (eq length 0) ? {
+        return ''
+    }
+
+    (res)string
+    (i)int
+    i = start
+    loop {
+	res = (licon res (liat list i))
+        (eq i (- (+ start length) 1)) ? {
+            escape
+        }
+        i = (+ i 1)
+    }
+    res = (lireindex res)
+    return res
+}
+
+
+# (liins list idx elm) -> array
+# リストに要素を追加
+@ (liins (list)string (idx)int (elm)string) {
+    return (lireindex (concat (lisub list 0 (+ idx 1)) (licon '' elm) (lisub list (+ idx 1) (- (lilen list) (+ idx 1)))))
+}
+
+# (li2str list sep) -> string
+@ (li2str (list)string (sep)string) {
+    (res)string
+    (i)int
+    loop {
+        res = (concat res (liat list i))
+        (eq i (- (lilen list) 1)) ? {
+            escape
+        }
+        i = (+ i 1)
+        res = (concat res sep)
+    }
+    return res
+}
+
+abort
