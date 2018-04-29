@@ -1,8 +1,8 @@
 # xaller-examples
-The web application examples written in Xaller.
+The web application examples written in [Xaller](https://github.com/CreativeGP/Xaller).
 
 There are two web application examples, calculator and unit converter.
-
+Both applications are deployed on here for use. [Calculator](https://cretgp.com/tools/calc.html), [Unit Converter](https://cretgp.com/tools/unicon.html)
 ## Directory Structure
 - calc
   - Calculator written in Xaller
